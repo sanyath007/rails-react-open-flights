@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import AirlineItem from './AirlineItem'
 
 const Airlines = () => {
   const [airlines, setAirlines] = useState([])
@@ -12,18 +13,19 @@ const Airlines = () => {
       .catch(err => console.log(err))
   }, [])
 
-  const list = airlines.map(item => (
-      <li key={item.attributes.name}>
-        {item.attributes.name}
-      </li>
+  const list = airlines.map((item, index) => (
+      <AirlineItem 
+        key={item.attributes.name + index}
+        attributes={item.attributes}
+      />
     )
   )
 
   return (
-    <div>
-      <h1>This is the Airlines#index view for the app.</h1>
+    <div className="container mr-auto ml-auto">
+      <h1 className="h-10 content-center">This is the Airlines#index view for the app.</h1>
 
-      <ul>{list}</ul>
+      <div className="grid grid-cols-3 gap-4">{list}</div>
     </div>
   );
 }
