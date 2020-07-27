@@ -44,18 +44,29 @@ const Airline = (props) => {
       .catch(err => console.log(err))
   }
 
+  const setRating = (score, e) => {
+    e.preventDefault()
+    
+    setReview({ ...review, score })
+  }
+
   return (
     <div className="container mr-auto ml-auto my-4">
       <h1>This is the Airline#show view for our app.</h1>
 
       <div className="flex my-4">
-        <div id="left-column" className="w-3/5 border border-solid">
+        <div id="left-column" className="w-3/5">
           {loaded && <Info attributes={airline.data.attributes} reviews={airline.included} />}
 
           <ReviewList />
         </div>
-        <div id="right-column" className="w-2/5 border border-solid">
-          <ReviewForm handleChange={handleChange} handleSubmit={handleSubmit} review={review} />
+        <div id="right-column" className="w-2/5 bg-gray-500">
+          <ReviewForm
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            setRating={setRating}
+            review={review}
+          />
         </div>
       </div>
     </div>
