@@ -1,36 +1,65 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 // import { BrowserRouter as Router, Link } from 'react-router-dom'
+import axios from 'axios'
+import Info from './Info'
+import ReviewList from './ReviewList'
+import ReviewForm from './ReviewForm'
 
-const Airline = ({ attributes }) => (
-  <div className="container mr-auto ml-auto">
-    <h1>This is the Airline#show view for our app.</h1>
-  </div>
-  // <div className="bg-white max-w-sm rounded overflow-hidden shadow-lg">
-  //   <img className="w-full h-40" src={attributes.image_url} alt={attributes.name} />
-  //   <div className="px-6 py-4">
-  //     <p className="font-bold text-xl mb-2">{attributes.name}</p>
-  //     <div className="flex space-x-1">
-  //       <Link
-  //         className="bg-gray-300 rounded-full px-4 py-2" 
-  //         to={`/airlines/${attributes.slug}`}
-  //       >
-  //         View
-  //       </Link>
-  //       <Link
-  //         className="bg-orange-300 rounded-full px-4 py-2" 
-  //         to={`/airlines/${attributes.slug}/edit`}
-  //       >
-  //         Edit
-  //       </Link>
-  //       <Link
-  //         className="bg-red-300 rounded-full px-4 py-2"
-  //         to={`/airlines/${attributes.slug}`}
-  //       >
-  //         Delete
-  //       </Link>
-  //     </div>
-  //   </div>
-  // </div>
-);
+const Airline = (props) => {
+  const [airline, setAirline] = useState({})
+  const [review, setReview] = useState({})
+  const [loaded, setLoaded] = useState(false)
+  
+  useEffect(() => {
+    const slug = props.match.params.slug
+    const url = `/api/v1/airlines/${slug}`
+
+    axios.get(url)
+      .then(res => {
+        console.log(res)
+        setAirline(res.data)
+        setLoaded(true)
+      })
+      .catch(err => console.log(err))
+  }, [])
+
+  const handleChange = e => {
+    e.preventDefault()
+    setReview(Object.assign({}, review, {[e.target.name]: e.target.value}))
+  }
+  
+  const handleSubmit = e => {
+    e.preventDefault()
+    
+    const csrfToken = document.querySelector('[name=csrf-token]').content
+    axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken
+
+    const airline_id = airline.data.id
+    axios.post('/api/v1/reviews', { review, airline_id })
+      .then(res => {
+        const included = [...airline.included, res.data]
+        setAirline({ ...airline, included })
+        setReview({ title: '', description: '', score: 0 })
+      })
+      .catch(err => console.log(err))
+  }
+
+  return (
+    <div className="container mr-auto ml-auto my-4">
+      <h1>This is the Airline#show view for our app.</h1>
+
+      <div className="flex my-4">
+        <div id="left-column" className="w-3/5 border border-solid">
+          {loaded && <Info attributes={airline.data.attributes} reviews={airline.included} />}
+
+          <ReviewList />
+        </div>
+        <div id="right-column" className="w-2/5 border border-solid">
+          <ReviewForm handleChange={handleChange} handleSubmit={handleSubmit} review={review} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default Airline
